@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Local data and model outputs (track data with DVC)
+data/
+models/
+*.pt
+*.pth
+*.onnx
+
+# Experiment outputs and secrets
+mlruns/
+.env
+.env.*
+!.env.example
+
+# Editor and operating system files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
