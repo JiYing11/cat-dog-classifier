@@ -6,10 +6,14 @@ A course project that classifies an uploaded image as a cat or dog. It demonstra
 
 - `app/` — Streamlit upload and prediction interface.
 - `ml/` — dataset preparation, MobileNetV3 training, and held-out test evaluation.
+- `ml/README_data.md` — dataset source, changes, DVC hashes, and pointer commit.
+- `ml/README_experiments.md` — MLflow run comparison and model selection rationale.
+- `ml/PROVENANCE.md` and `ml/registry/current_model.md` — model lineage and selected checkpoint.
 - `tests/` — upload validation tests, including invalid, corrupt, unsupported, and oversized images.
 - `data/*.dvc` — DVC metadata for dataset versions and the held-out test set. The image files live in the configured Azure Blob remote.
 - `models/` — locally trained checkpoints. They are intentionally excluded from Git.
 - `.github/workflows/ci.yml` — runs application tests and builds the Docker image on pushes and pull requests.
+- `DEPLOYMENT.md` — branch path, CI/CD behavior, and local container demo instructions.
 
 ## Local setup
 
@@ -75,4 +79,4 @@ The project tracks balanced dataset snapshots `v1` and `v2`, plus a separate hel
 
 ## Git workflow
 
-Use `dev` for ongoing work, feature branches for isolated changes, and `staging` for a demonstration-ready integration. Merge reviewed work into `main` when it is ready to submit. Push branches and open pull requests on GitHub so Actions can report CI status.
+Use feature branches for isolated changes, then open pull requests along `feature/*` -> `dev` -> `staging` -> `main`. GitHub Actions runs pytest, Ruff lint/format checks, and a Docker build on pull requests to these branches. Pushes to `dev`, `staging`, or `main` publish a correspondingly tagged image to GHCR. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full flow and the required GitHub branch-protection settings.

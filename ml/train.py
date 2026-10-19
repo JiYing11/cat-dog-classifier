@@ -2,6 +2,7 @@
 
 import argparse
 import random
+import subprocess
 from pathlib import Path
 
 import mlflow
@@ -23,6 +24,36 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSIONS_ROOT = ROOT / "data" / "versions"
 MODEL_ROOT = ROOT / "models"
 SEED = 42
+
+
+def get_provenance(version: str) -> tuple[str, str, bool]:
+    """Return the current Git SHA, DVC output hash, and tracked-tree status."""
+    git_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    git_status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    pointer_path = ROOT / "data" / "versions" / f"{version}.dvc"
+    dvc_hash = "unknown"
+    if pointer_path.is_file():
+        for line in pointer_path.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("- md5:"):
+                dvc_hash = line.split("- md5:", 1)[1].strip()
+                break
+    return (
+        git_sha.stdout.strip() or "unknown",
+        dvc_hash,
+        bool(git_status.stdout.strip()),
+    )
 
 
 def make_loaders(version: str, batch_size: int) -> tuple[DataLoader, DataLoader]:
@@ -123,6 +154,7 @@ def train(version: str, epochs: int, batch_size: int, learning_rate: float) -> P
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     output_path = MODEL_ROOT / version / "best.pth"
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    git_sha, dvc_hash, dirty_worktree = get_provenance(version)
 
     # MLflow 3 uses a database backend for experiment metadata. The SQLite
     # database stays local to this project and is excluded from Git.
@@ -142,6 +174,9 @@ def train(version: str, epochs: int, batch_size: int, learning_rate: float) -> P
                 "device": str(device),
                 "train_images": len(train_loader.dataset),
                 "validation_images": len(val_loader.dataset),
+                "git_commit": git_sha,
+                "git_worktree_dirty": dirty_worktree,
+                "dvc_dataset_hash": dvc_hash,
             }
         )
         best_accuracy = -1.0
@@ -176,6 +211,8 @@ def train(version: str, epochs: int, batch_size: int, learning_rate: float) -> P
                         "mean": IMAGENET_MEAN,
                         "std": IMAGENET_STD,
                         "dataset_version": version,
+                        "git_commit": git_sha,
+                        "dvc_dataset_hash": dvc_hash,
                     },
                     output_path,
                 )
