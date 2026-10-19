@@ -57,4 +57,4 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/jiying11/cat-dog-classifier:${{ github.ref_name }}
+          tags: ghcr.io/jiying11/cat-dog-classifier:${{ github.event_name == 'push' && github.ref_name || format('pr-{0}', github.event.pull_request.number) }}
