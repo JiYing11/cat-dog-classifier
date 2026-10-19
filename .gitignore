@@ -18,6 +18,10 @@ models/
 
 # Experiment outputs and secrets
 mlruns/
+mlartifacts/
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
 .env
 .env.*
 !.env.example

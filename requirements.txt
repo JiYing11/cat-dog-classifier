@@ -4,3 +4,4 @@ pytest
 torch
 torchvision
 dvc[azure]
+mlflow
