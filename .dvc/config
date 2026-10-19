@@ -1,0 +1,7 @@
+[core]
+    remote = azure
+['remote "azure"']
+    url = azure://dvc-data/cat-dog-classifier
+    account_name = catdoggstorage
+    exclude_environment_credential = true
+    exclude_managed_identity_credential = true

@@ -6,8 +6,11 @@ venv/
 .pytest_cache/
 .ruff_cache/
 
-# Local data and model outputs (track data with DVC)
-data/
+# Local source data and DVC-managed data outputs
+data/source/
+data/versions/v1/
+data/versions/v2/
+data/test/
 models/
 *.pt
 *.pth

@@ -1,0 +1,6 @@
+streamlit
+Pillow
+pytest
+torch
+torchvision
+dvc[azure]

@@ -11,6 +11,12 @@ A course project for classifying an uploaded image as a cat or a dog. The projec
 
 Training data and generated model files will not be committed directly to Git. Dataset versions will be tracked with DVC.
 
-## Status
+## Run locally
 
-Project setup in progress. The first milestone is a local image upload and prediction demo.
+Create and activate a virtual environment, install `requirements.txt`, then run:
+
+```powershell
+python -m streamlit run app/main.py
+```
+
+The current milestone validates and previews JPEG/PNG uploads. Model training and predictions are the next step.
