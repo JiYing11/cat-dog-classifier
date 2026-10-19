@@ -35,6 +35,8 @@ def test_empty_or_corrupt_uploads_are_rejected(data: bytes) -> None:
         (b"x" * (MAX_IMAGE_BYTES + 1), "10 MB or smaller"),
     ],
 )
-def test_unsupported_or_oversized_uploads_are_rejected(data: bytes, message: str) -> None:
+def test_unsupported_or_oversized_uploads_are_rejected(
+    data: bytes, message: str
+) -> None:
     with pytest.raises(InvalidImageError, match=message):
         decode_image(data)

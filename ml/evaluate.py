@@ -10,7 +10,6 @@ from torchvision import datasets, transforms
 
 from ml.model import CLASS_NAMES, IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD, build_model
 
-
 ROOT = Path(__file__).resolve().parents[1]
 TEST_ROOT = ROOT / "data" / "test"
 MODEL_ROOT = ROOT / "models"

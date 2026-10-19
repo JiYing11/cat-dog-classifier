@@ -1,10 +1,9 @@
 """Download Oxford-IIIT Pet and create reproducible balanced dataset versions."""
 
-from pathlib import Path
 import random
+from pathlib import Path
 
 from torchvision.datasets import OxfordIIITPet
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = ROOT / "data"
@@ -56,7 +55,9 @@ def prepare_datasets() -> None:
         for class_name, images in by_class.items():
             selected = images[:per_class]
             if len(selected) < per_class:
-                raise RuntimeError(f"Not enough {class_name} images to create {version}.")
+                raise RuntimeError(
+                    f"Not enough {class_name} images to create {version}."
+                )
             train_count = int(per_class * 0.8)
             for position, (source_index, image) in enumerate(selected):
                 split = "train" if position < train_count else "val"

@@ -9,7 +9,6 @@ from torchvision import transforms
 
 from ml.model import CLASS_NAMES, IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD, build_model
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_ROOT = ROOT / "models"
 
@@ -25,7 +24,9 @@ class CatDogPredictor:
 
     def predict(self, image: Image.Image) -> dict[str, float]:
         """Return one probability per class for a PIL image."""
-        image_tensor = self.preprocess(image.convert("RGB")).unsqueeze(0).to(self.device)
+        image_tensor = (
+            self.preprocess(image.convert("RGB")).unsqueeze(0).to(self.device)
+        )
         with torch.inference_mode():
             probabilities = torch.softmax(self.model(image_tensor), dim=1)[0]
         return {
@@ -55,7 +56,10 @@ def load_predictor(version: str = "v2") -> CatDogPredictor:
     model.load_state_dict(checkpoint["state_dict"])
     model.eval()
     class_names = tuple(
-        name for name, _ in sorted(checkpoint["class_to_idx"].items(), key=lambda item: item[1])
+        name
+        for name, _ in sorted(
+            checkpoint["class_to_idx"].items(), key=lambda item: item[1]
+        )
     )
     preprocess = transforms.Compose(
         [

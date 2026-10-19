@@ -19,7 +19,6 @@ from ml.model import (
     build_model,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 VERSIONS_ROOT = ROOT / "data" / "versions"
 MODEL_ROOT = ROOT / "models"
@@ -78,7 +77,10 @@ def make_loaders(version: str, batch_size: int) -> tuple[DataLoader, DataLoader]
     train_data = datasets.ImageFolder(version_root / "train", transform=train_transform)
     val_data = datasets.ImageFolder(version_root / "val", transform=eval_transform)
     expected_mapping = {name: index for index, name in enumerate(CLASS_NAMES)}
-    if train_data.class_to_idx != expected_mapping or val_data.class_to_idx != expected_mapping:
+    if (
+        train_data.class_to_idx != expected_mapping
+        or val_data.class_to_idx != expected_mapping
+    ):
         raise ValueError(
             f"Expected class folders {expected_mapping}; got train={train_data.class_to_idx}, "
             f"val={val_data.class_to_idx}. Check the dataset directory names."

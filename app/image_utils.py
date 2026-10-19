@@ -4,7 +4,6 @@ from io import BytesIO
 
 from PIL import Image, UnidentifiedImageError
 
-
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 SUPPORTED_FORMATS = {"JPEG", "PNG"}
 

@@ -14,7 +14,9 @@ def get_predictor(version: str) -> CatDogPredictor:
 
 st.set_page_config(page_title="Cat or Dog?", page_icon="🐾")
 st.title("Cat or Dog?")
-st.write("Upload a JPEG or PNG image and let the model predict whether it shows a cat or dog.")
+st.write(
+    "Upload a JPEG or PNG image and let the model predict whether it shows a cat or dog."
+)
 
 model_version = st.selectbox("Model version", ["v2", "v1"], index=0)
 
@@ -40,4 +42,6 @@ if uploaded_file is not None:
                 st.metric("Confidence", f"{confidence:.1%}")
                 st.write("Class probabilities")
                 for class_name, probability in probabilities.items():
-                    st.progress(probability, text=f"{class_name.title()}: {probability:.1%}")
+                    st.progress(
+                        probability, text=f"{class_name.title()}: {probability:.1%}"
+                    )

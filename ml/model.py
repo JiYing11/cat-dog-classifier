@@ -3,7 +3,6 @@
 from torch import nn
 from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
 
-
 IMAGE_SIZE = 224
 CLASS_NAMES = ("cat", "dog")
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
