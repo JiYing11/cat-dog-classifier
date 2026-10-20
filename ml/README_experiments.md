@@ -1,21 +1,67 @@
-# Experiment summary
+# Experiment report
 
-## Experiment design
+## Objective
 
-Both runs fine-tuned TorchVision MobileNetV3 Small with ImageNet pretrained weights, 224 x 224 inputs, AdamW, learning rate `0.0001`, batch size `32`, seed `42`, and five epochs. The comparison changes the training dataset snapshot: v1 has 300 training/validation images total and v2 has 1,000. MLflow logs hyperparameters, per-epoch training/validation loss and accuracy, the best validation accuracy, and the saved checkpoint artifact.
+Compare fine-tuning the same pretrained MobileNetV3 Small model with two balanced training/validation snapshots: v1 (150 images per class) and v2 (500 images per class). The separate 3,669-image test split is reserved for the final v2 evaluation.
 
-The training runs are named `v1-mobilenet-v3-small` and `v2-mobilenet-v3-small` in the local `cat-dog-classifier` MLflow experiment. The held-out evaluation run is named `v2-held-out-test`.
+## Method
 
-## Results and selected model
+Both training runs used the same configuration so the dataset version was the main comparison variable:
 
-- v1 best validation accuracy: `93.3%`.
-- v2 best validation accuracy: `95.0%`.
-- v2 held-out test accuracy: `94.06%` (3,669 images).
-- v2 cat precision/recall: `89.1%` / `93.0%`.
-- v2 dog precision/recall: `96.6%` / `94.6%`.
+| Setting | Value |
+|---|---|
+| Architecture | TorchVision MobileNetV3 Small, initialized with ImageNet pretrained weights |
+| Input size | 224 × 224 pixels |
+| Optimizer | AdamW |
+| Learning rate | 0.0001 |
+| Batch size | 32 |
+| Epochs | 5 |
+| Random seed | 42 |
+| Training device | CUDA (as recorded in MLflow) |
+| Selection rule | Checkpoint with the best validation accuracy |
 
-**Selected model: v2.** It uses the larger balanced training snapshot and achieved higher best validation accuracy than v1. Its held-out test accuracy is strong, and class-specific recall shows that it recognizes both classes well. Accuracy is the main summary metric because the app returns one of two labels; per-class precision and recall are included because the held-out test split is not class balanced and overall accuracy alone can hide class-specific errors.
+Training applies random resized crops and horizontal flips. Validation and test images are resized and normalized without random augmentation.
 
-## Reproducibility
+## Results
 
-MLflow metadata is stored locally in `mlflow.db`; start the UI with `mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000`. Checkpoints are stored under the ignored `models/` directory and are not included in Git. The current training script also records the Git commit, whether the Git working tree was dirty, and the DVC directory hash. The original v1/v2 runs predate those provenance fields; after committing the provenance update, rerun both training commands to create fully traceable runs.
+These are the latest provenance-recorded runs in the local MLflow database:
+
+| Run | Dataset | Best validation accuracy | MLflow run ID |
+|---|---|---:|---|
+| `v1-mobilenet-v3-small` | v1 | 93.33% | `fd428d89882d474892c1c787f35af0ff` |
+| `v2-mobilenet-v3-small` | v2 | 94.50% | `48d9a3e853ae4c30b44832d78f0e8d9e` |
+
+The held-out v2 evaluation is recorded as run `bdc00b40fa88445e90b61c1bda320d41`:
+
+| Metric | Result |
+|---|---:|
+| Test images | 3,669 |
+| Accuracy | 94.06% |
+| Cat precision / recall | 89.01% / 93.07% |
+| Dog precision / recall | 96.63% / 94.53% |
+
+Confusion matrix (rows are actual labels; columns are predicted labels; order is cat, dog):
+
+```text
+[[1101,  82],
+ [ 136, 2350]]
+```
+
+## Interpretation and selected model
+
+The v2 checkpoint is selected because it used the larger balanced snapshot and achieved higher validation accuracy than v1. Its held-out test accuracy is 94.06%. Per-class precision and recall are included because overall accuracy alone does not show which class is more often missed. These figures describe this held-out dataset and do not guarantee the same performance on images from other sources.
+
+## Tracking and reproduction
+
+MLflow tracking metadata is stored locally in `mlflow.db`; checkpoint artifacts are stored under `models/`. Both are local project artifacts and are not committed to Git. The training runs above record the code commit, clean/dirty worktree state, DVC snapshot hash, configuration, device, and metrics.
+
+To reproduce the training runs from the repository root after configuring DVC access:
+
+```powershell
+dvc pull
+python -m ml.train --version v1 --epochs 5
+python -m ml.train --version v2 --epochs 5
+python -m ml.evaluate --version v2
+```
+
+The evaluation script records test metrics in MLflow. Do not use the held-out test results to tune the model or choose between checkpoints.
