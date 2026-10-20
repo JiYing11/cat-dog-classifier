@@ -1,0 +1,48 @@
+name: CD
+
+on:
+  push:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/jiying11/cat-dog-classifier:${{ github.ref_name }}
+
+      - name: Prepare deployment environment (no actual deploy)
+        env:
+          DEPLOY_ENV: ${{ steps.env.outputs.name }}
+          API_KEY: ${{ steps.env.outputs.name == 'production' && secrets.PRODUCTION_API_KEY || secrets.STAGING_API_KEY }}
+        run: |
+          echo "Deployment environment: ${DEPLOY_ENV}"
+          echo "API key injected: yes (length ${#API_KEY})"
+          echo "Image ready: ghcr.io/jiying11/cat-dog-classifier:${{ github.ref_name }}"
